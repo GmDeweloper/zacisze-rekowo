@@ -2,31 +2,32 @@ name: Codzienna generacja cen
 
 on:
   schedule:
-    - cron: "0 6 * * *"   # codziennie o 06:00 UTC (w PL zwykle 07:00 lub 08:00)
-  workflow_dispatch:       # pozwala uruchomić ręcznie przyciskiem "Run workflow"
+    # codziennie o 7:00 czasu polskiego (w zimie 6:00 UTC, w lecie 5:00 UTC)
+    - cron: "0 6 * * *"
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Pobierz repo
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Ustaw Pythona
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.12"
 
-      - name: Uruchom generator cen
-        run: |
-          python "ZaciszeRekowo generuj_ceny.py"
+      - name: Run script
+        run: python "ZaciszeRekowo generuj_ceny.py"
 
-      - name: Zapisz wygenerowany plik do repo (commit + push)
+      - name: Commit and push changes
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git add ceny.csv
-          git commit -m "Automatyczna aktualizacja ceny.csv" || echo "Brak zmian do commita"
+
+          git commit -m "Automatyczna aktualizacja cen" || echo "Brak zmian do commita"
           git push
